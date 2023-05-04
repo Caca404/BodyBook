@@ -1,0 +1,1 @@
+export const IMAGENAME = require('../../../images/userDefault.png');
