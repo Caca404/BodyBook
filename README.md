@@ -1,7 +1,7 @@
 # BodyBook
 App em React Native/Expo para armazenar exercícios diários.
 
-# Instalação e Uso
+## Instalação e Uso
 
 Primeiramente, você precisa do programa do Expo instalado no celular.
 
