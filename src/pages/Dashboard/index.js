@@ -1,14 +1,15 @@
-import { SafeAreaView, Pressable, Keyboard, Image, Text, View, TextInput, TouchableOpacity } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SafeAreaView, Pressable, Keyboard, Text, TouchableOpacity } from 'react-native';
+import { useEffect, useContext } from 'react';
+import * as SecureStore from 'expo-secure-store';
 import styles from './styles';
-import { useEffect } from 'react';
 
-export default function Dashboard() {
+export default function Dashboard({navigation, context}) {
 
+    const { signOut } = useContext(context);
 
     useEffect(() => {
         async function lookCookies(){
-            console.log(await AsyncStorage.getItem('cookies'));
+            console.log(await SecureStore.getItemAsync('userToken'));
         }
 
         lookCookies();
@@ -18,7 +19,10 @@ export default function Dashboard() {
     return (
         <Pressable onPress={Keyboard.dismiss} style={styles.containerPressable}>
 			<SafeAreaView style={styles.container}>
-                <Text>Olá</Text>
+                <Text style={{color: 'white'}}>Olá</Text>
+                <TouchableOpacity style={styles.formSubmitLogin} onPress={() => { signOut() }}>
+                    <Text style={styles.formTextSubmit}>Sair</Text>
+                </TouchableOpacity>
             </SafeAreaView>
         </Pressable>
     );

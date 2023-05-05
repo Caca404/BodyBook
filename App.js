@@ -1,6 +1,8 @@
 import React from 'react';
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import * as SecureStore from 'expo-secure-store';
+import api from './src/services/api';
 
 import Login from './src/pages/Login';
 import Registrar from './src/pages/Registrar';
@@ -49,6 +51,8 @@ export default function App() {
 
 			try {
 				userToken = await SecureStore.getItemAsync('userToken');
+
+				dispatch({ type: 'RESTORE_TOKEN', token: userToken });
 			} catch (e) {
 				// Restoring token failed
 			}
@@ -57,7 +61,7 @@ export default function App() {
 
 			// This will switch to the App screen or Auth screen and this loading
 			// screen will be unmounted and thrown away.
-			dispatch({ type: 'RESTORE_TOKEN', token: userToken });
+			
 		};
 
 		bootstrapAsync();
@@ -70,9 +74,42 @@ export default function App() {
 			// After getting token, we need to persist the token using `SecureStore`
 			// In the example, we'll use a dummy token
 
-			dispatch({ type: 'SIGN_IN', token: 'dummy-auth-token' });
+			let axiosConfig = {
+				headers: {
+					'Content-Type': 'application/json;charset=UTF-8',
+					"Access-Control-Allow-Origin": "*",
+				}
+			};
+			await api.post('api/login', {email: "ara72@example.com", password: "password"}, axiosConfig)
+				.then(async response => {
+					const token = response.data.token;
+
+					await SecureStore.setItemAsync('userToken', token);
+
+					dispatch({ type: 'SIGN_IN', token: token });
+				})
+				.catch(error => console.log(error));
+
+			
 		},
-		signOut: () => dispatch({ type: 'SIGN_OUT' }),
+		signOut: async() => {
+
+			let axiosConfig = {
+				headers: {
+					'Content-Type': 'application/json;charset=UTF-8',
+					"Access-Control-Allow-Origin": "*",
+					'Authorization': `Bearer ${await SecureStore.getItemAsync('userToken')}`
+				}
+			};
+			await api.get('api/logout', axiosConfig)
+				.then(async response => {
+
+					await SecureStore.deleteItemAsync('userToken');
+
+					dispatch({ type: 'SIGN_OUT' });
+				})
+				.catch(error => console.log(error));
+		},
 		signUp: async (data) => {
 			// In a production app, we need to send user data to server and get a token
 			// We will also need to handle errors if sign up failed
@@ -93,11 +130,16 @@ export default function App() {
 						<Stack.Screen name='login'>
 							{(props) => <Login {...props} context={AuthContext} />}
 						</Stack.Screen>
-						<Stack.Screen name='registrar' component={Registrar} />
+						<Stack.Screen name='registrar'>
+							{(props) => <Registrar {...props} context={AuthContext} />}
+						</Stack.Screen>
+
 					</Stack.Navigator>
 				) : (
 					<Stack.Navigator initialRouteName="dashboard" screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#2b2b2b' } }}>
-						<Stack.Screen name='dashboard' component={Dashboard} />
+						<Stack.Screen name='dashboard'>
+							{(props) => <Dashboard {...props} context={AuthContext} />}
+						</Stack.Screen>
 					</Stack.Navigator>
 				)}
 			</NavigationContainer>

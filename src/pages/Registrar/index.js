@@ -1,19 +1,37 @@
 import { SafeAreaView, Pressable, Keyboard, Image, Text, View, TextInput, TouchableOpacity } from 'react-native';
+import * as SecureStore from 'expo-secure-store';
+import styles from './styles';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 import { faDumbbell } from '@fortawesome/free-solid-svg-icons';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import styles from './styles';
 import { IMAGENAME } from '../../components/images';
-import { useEffect } from 'react';
+import { useContext, useEffect, useState } from 'react';
+import * as ImagePicker from 'expo-image-picker';
 
-export default function Registrar() {
+export default function Registrar({navigation, context}) {
 
+    const {signUp} = useContext(context);
+
+    const [photo, setPhoto] = useState(null);
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPass] = useState('');
+
+    const handleChoosePhoto = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 1,
+        });
+
+        setPhoto(result.assets[0].uri);
+    };
 
     useEffect(() => {
         async function lookCookies(){
-            console.log(await AsyncStorage.getItem('cookies'));
+            console.log(await SecureStore.getItemAsync('userToken'));
         }
 
         lookCookies();
@@ -33,8 +51,11 @@ export default function Registrar() {
                         <Text style={styles.title}> Preencha seus dados! :D </Text>
                     </View>
                     <View style={styles.formLogin}>
-                        <TouchableOpacity style={styles.buttonImageInput}>
-                            <Image style={styles.imageInput} source={IMAGENAME}/>
+                        <TouchableOpacity style={styles.buttonImageInput} onPress={handleChoosePhoto}>
+                            {
+                                !photo ? <Image style={styles.imageInput} source={IMAGENAME}/> 
+                                : <Image style={styles.imageInput} source={{uri: photo}}/> 
+                            }
                             <FontAwesomeIcon icon={faPlusCircle} style={styles.textImageInput} color='yellow' size={32}/>
                         </TouchableOpacity>
 

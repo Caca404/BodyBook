@@ -80,7 +80,8 @@ const styles = StyleSheet.create({
     },
     imageInput:{
         width: 125,
-        height: 125
+        height: 125,
+        borderRadius: 100
     },
     textImageInput:{
         position: "relative",
