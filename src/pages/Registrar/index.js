@@ -19,6 +19,18 @@ export default function Registrar({navigation, context}) {
     const [password, setPass] = useState('');
 
     const handleChoosePhoto = async () => {
+        let permissions = (await ImagePicker.getMediaLibraryPermissionsAsync());
+
+        if(permissions.status != "granted"){
+            if(!permissions.canAskAgain){
+                alert('Permita a manipulação de midia pelas permissões do app.');
+                return;
+            }
+
+            let getMediaLibraryPermissions = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if(getMediaLibraryPermissions.status != "granted") return;
+        }
+
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
@@ -26,17 +38,30 @@ export default function Registrar({navigation, context}) {
             quality: 1,
         });
 
-        setPhoto(result.assets[0].uri);
+        if (!result.canceled){
+            console.log(result.assets[0]);
+            setPhoto(result.assets[0]);
+        }
+        
     };
 
-    useEffect(() => {
-        async function lookCookies(){
-            console.log(await SecureStore.getItemAsync('userToken'));
-        }
+    async function criarConta(){
+        signUp({
+            name, 
+            email, 
+            password, 
+            photo
+        });
+    }
 
-        lookCookies();
+    // useEffect(() => {
+    //     async function lookCookies(){
+    //         console.log(await SecureStore.getItemAsync('userToken'));
+    //     }
 
-    }, []);
+    //     lookCookies();
+
+    // }, []);
 
     return (
         <Pressable onPress={Keyboard.dismiss} style={styles.containerPressable}>
@@ -54,7 +79,7 @@ export default function Registrar({navigation, context}) {
                         <TouchableOpacity style={styles.buttonImageInput} onPress={handleChoosePhoto}>
                             {
                                 !photo ? <Image style={styles.imageInput} source={IMAGENAME}/> 
-                                : <Image style={styles.imageInput} source={{uri: photo}}/> 
+                                : <Image style={styles.imageInput} source={{uri: photo.uri}}/> 
                             }
                             <FontAwesomeIcon icon={faPlusCircle} style={styles.textImageInput} color='yellow' size={32}/>
                         </TouchableOpacity>
@@ -63,22 +88,25 @@ export default function Registrar({navigation, context}) {
                         <TextInput style={styles.formInput} returnKeyType="next" 
                             ref={(input) => { this.secondTextInput = input; }}
                             onSubmitEditing={() => { this.thirdTextInput.focus(); }} 
-                            blurOnSubmit={false}/>
+                            blurOnSubmit={false}
+                            onChangeText={setName} />
 
                         <Text style={styles.formLabel}>Email</Text>
                         <TextInput style={styles.formInput} returnKeyType="next" 
                             keyboardType='email-address'
                             ref={(input) => { this.thirdTextInput = input; }}
                             onSubmitEditing={() => { this.fourthTextInput.focus(); }} 
-                            blurOnSubmit={false}/>
+                            blurOnSubmit={false}
+                            onChangeText={setEmail} />
 
                         <Text style={styles.formLabel}>Senha</Text>
                         <TextInput style={styles.formInput}
                             ref={(input) => { this.fourthTextInput = input; }}
                             secureTextEntry={true}
-                            onSubmitEditing={() => {}}/>
+                            onSubmitEditing={criarConta}
+                            onChangeText={setPass} />
 
-                        <TouchableOpacity style={styles.formSubmitRegister}>
+                        <TouchableOpacity style={styles.formSubmitRegister} onPress={criarConta}>
                             <Text style={styles.formTextSubmit}>Criar Conta</Text>
                         </TouchableOpacity>
                     </View>

@@ -3,6 +3,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import * as SecureStore from 'expo-secure-store';
 import api from './src/services/api';
+import moment from 'moment/moment';
 
 import Login from './src/pages/Login';
 import Registrar from './src/pages/Registrar';
@@ -80,7 +81,7 @@ export default function App() {
 					"Access-Control-Allow-Origin": "*",
 				}
 			};
-			await api.post('api/login', {email: "ara72@example.com", password: "password"}, axiosConfig)
+			await api.post('api/login', {email: data.email, password: data.password}, axiosConfig)
 				.then(async response => {
 					const token = response.data.token;
 
@@ -116,7 +117,50 @@ export default function App() {
 			// After getting token, we need to persist the token using `SecureStore`
 			// In the example, we'll use a dummy token
 
-			dispatch({ type: 'SIGN_IN', token: 'dummy-auth-token' });
+			var dataPost = new FormData();
+			dataPost.append('name', data.name);
+			dataPost.append('email', data.email);
+			dataPost.append('password', data.password);
+
+			if(data.photo != null){
+
+				let indexFormatPhoto = data.photo.uri.lastIndexOf('.');
+				let formatPhoto = data.photo.uri.substring(indexFormatPhoto);
+
+				dataPost.append('photo', {
+					uri: data.photo.uri, 
+					name: 'image-'+data.name+'-'+(moment().format('YYYY-MM-DD-HH-mm-ss'))+formatPhoto,
+					type: 'image/'+formatPhoto
+				});
+			}
+			else dataPost.append('photo', null);
+
+			let axiosConfig = {
+				headers: {
+					'Content-Type': 'application/json;charset=UTF-8',
+					"Access-Control-Allow-Origin": "*",
+					'Content-Type': `multipart/form-data`
+				}
+			};
+
+			await api.post('api/createUser', dataPost, axiosConfig)
+				.then(async response => {
+
+					const token = response.data.token;
+
+					await SecureStore.setItemAsync('userToken', token);
+
+					dispatch({ type: 'SIGN_IN', token: token });
+				})
+				.catch(error => {
+					if (error.response) {
+						// The request was made and the server responded with a status code
+						// that falls out of the range of 2xx
+						console.log(error.response.data);
+						console.log(error.response.status);
+						console.log(error.response.headers);
+					}
+				});
 		},
 	}), []);
 
