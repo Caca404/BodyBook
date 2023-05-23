@@ -1,15 +1,29 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import * as SecureStore from 'expo-secure-store';
 import api from './src/services/api';
 import moment from 'moment/moment';
 
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faBook, faHouse, faUser, faUsers } from '@fortawesome/free-solid-svg-icons';
+import styles from './styles';
+
 import Login from './src/pages/Login';
 import Registrar from './src/pages/Registrar';
+
 import Dashboard from './src/pages/Dashboard';
+import Perfil from './src/pages/Perfil';
+import Wiki from './src/pages/Wiki';
+import Event from './src/pages/Event';
+import Community from './src/pages/Community';
+
+import ButtonEvent from './src/components/buttonEvent';
+import { Text, View } from 'react-native';
 
 const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
 
 export default function App() {
 
@@ -89,11 +103,11 @@ export default function App() {
 
 					dispatch({ type: 'SIGN_IN', token: token });
 				})
-				.catch(error => console.log(error));
+				.catch(error => alert(error.response.data));
 
 			
 		},
-		signOut: async() => {
+		signOut: async () => {
 
 			let axiosConfig = {
 				headers: {
@@ -164,7 +178,9 @@ export default function App() {
 		},
 	}), []);
 
-
+	const PayScreenComponent = () => {
+		return null
+	}
 
 	return (
 		<AuthContext.Provider value={authContext}>
@@ -177,14 +193,76 @@ export default function App() {
 						<Stack.Screen name='registrar'>
 							{(props) => <Registrar {...props} context={AuthContext} />}
 						</Stack.Screen>
-
 					</Stack.Navigator>
 				) : (
-					<Stack.Navigator initialRouteName="dashboard" screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#2b2b2b' } }}>
-						<Stack.Screen name='dashboard'>
+					<Tab.Navigator initialRouteName="dashboard" screenOptions={ ({ route, navigation }) => { 
+						return {
+							headerShown: false,
+							tabBarShowLabel: false,
+							tabBarInactiveBackgroundColor: '#161616', 
+							tabBarActiveBackgroundColor: '#F7FD00',
+							tabBarLabelStyle: navigation.isFocused() ? styles.itemActive :
+								styles.itemInactive,
+							tabBarStyle: {borderTopWidth: 0, height: 80, alignContent: 'center'}
+						}
+					}}>
+						<Tab.Screen name='dashboard' options={{
+							tabBarIcon: ({ focused }) => (
+								<View style={{alignItems: 'center', justifyContent: 'center'}}>
+									<FontAwesomeIcon icon={faHouse} size={26}
+										color={focused ? 'black' : 'white'} />
+									<Text style={
+										{color: focused ? 'black' : 'white', fontSize: 10, marginTop: 5}}
+									>Home</Text>
+								</View>
+							)
+						}}>
 							{(props) => <Dashboard {...props} context={AuthContext} />}
-						</Stack.Screen>
-					</Stack.Navigator>
+						</Tab.Screen>
+						<Tab.Screen name="wiki" options={{
+							tabBarLabel: "Wiki",
+							tabBarIcon: ({ focused }) => (
+								<View style={{alignItems: 'center', justifyContent: 'center'}}>
+									<FontAwesomeIcon icon={faBook} size={26}
+										color={focused ? 'black' : 'white'} />
+									<Text style={
+										{color: focused ? 'black' : 'white', fontSize: 10, marginTop: 5}}
+									>Wiki</Text>
+								</View>
+							)
+						}}>
+							{(props) => <Wiki {...props} context={AuthContext} />}
+						</Tab.Screen>
+						<Tab.Screen name="event" component={PayScreenComponent} options={{
+							tabBarButton: (props) => (<ButtonEvent {...props} context={AuthContext} />)
+						}} />
+						<Tab.Screen name="community" options={{
+							tabBarLabel: "Comunidade",
+							tabBarIcon: ({ focused }) => (
+								<View style={{alignItems: 'center', justifyContent: 'center'}}>
+									<FontAwesomeIcon icon={faUsers} size={30}
+										color={focused ? 'black' : 'white'} />
+									<Text style={
+										{color: focused ? 'black' : 'white', fontSize: 10, marginTop: 5}}
+									>Comunidade</Text>
+								</View>
+							)
+						}}>
+							{(props) => <Community {...props} context={AuthContext} />}
+						</Tab.Screen>
+						<Tab.Screen name='perfil' options={{
+							tabBarLabel: "Perfil",
+							tabBarIcon: ({focused}) => (
+								<View style={{alignItems: 'center', justifyContent: 'center'}}>
+									<FontAwesomeIcon icon={faUser} size={26}
+										color={focused ? 'black' : 'white'} />
+									<Text style={{color: focused ? 'black' : 'white', fontSize: 10, marginTop: 5}}>Perfil</Text>
+								</View>
+							)
+						}}>
+							{(props) => <Perfil {...props} context={AuthContext} />}
+						</Tab.Screen>
+					</Tab.Navigator>
 				)}
 			</NavigationContainer>
 		</AuthContext.Provider>

@@ -1,7 +1,8 @@
 import axios  from "axios";
+import {API_PATH} from "@env"
 
 const api = axios.create({
-    baseURL: "http://192.168.0.8/BodyBook-API/public",
+    baseURL: API_PATH+"/public",
     withCredentials: true
 });
 

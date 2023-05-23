@@ -1,6 +1,7 @@
-import { SafeAreaView, Pressable, Keyboard, Image, Text, View, TextInput, TouchableOpacity } from 'react-native';
-import * as SecureStore from 'expo-secure-store';
+import { ActivityIndicator, SafeAreaView, Pressable, Keyboard, Image, Text, View, TextInput, TouchableOpacity } from 'react-native';
 import styles from './styles';
+import commomStyles from '../../../styles';
+import * as SecureStore from 'expo-secure-store';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 import { faDumbbell } from '@fortawesome/free-solid-svg-icons';
@@ -17,6 +18,13 @@ export default function Registrar({navigation, context}) {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPass] = useState('');
+    
+    const [nameEmptyError, setNameEmptyError] = useState(false);
+    const [emailInvalidError, setEmailInvalidError] = useState(false);
+    const [emailEmptyError, setEmailEmptyError] = useState(false);
+    const [passEmptyError, setPassEmptyError] = useState(false);
+
+    const [isSubmited, setIsSubmited] = useState(false);
 
     const handleChoosePhoto = async () => {
         let permissions = (await ImagePicker.getMediaLibraryPermissionsAsync());
@@ -46,22 +54,45 @@ export default function Registrar({navigation, context}) {
     };
 
     async function criarConta(){
-        signUp({
-            name, 
-            email, 
-            password, 
-            photo
-        });
+        setIsSubmited(true);
+        
+        if(validationAccount())
+            await signUp({
+                name, 
+                email, 
+                password, 
+                photo
+            });
+
+        setIsSubmited(false);
     }
 
-    // useEffect(() => {
-    //     async function lookCookies(){
-    //         console.log(await SecureStore.getItemAsync('userToken'));
-    //     }
+    function validationAccount(){
 
-    //     lookCookies();
+        if(isSubmited) return false;
 
-    // }, []);
+        let isValid = true;
+
+        if(name == ""){
+            isValid = false;
+            setNameEmptyError(true);
+        }
+        else setNameEmptyError(false);
+
+        if(email == ""){
+            isValid = false;
+            setEmailEmptyError(true);
+        }
+        else setEmailEmptyError(false);
+
+        if(password == ""){
+            isValid = false;
+            setPassEmptyError(true);
+        }
+        else setPassEmptyError(false);
+
+        return isValid;
+    }
 
     return (
         <Pressable onPress={Keyboard.dismiss} style={styles.containerPressable}>
@@ -90,6 +121,11 @@ export default function Registrar({navigation, context}) {
                             onSubmitEditing={() => { this.thirdTextInput.focus(); }} 
                             blurOnSubmit={false}
                             onChangeText={setName} />
+                        { nameEmptyError && 
+                            <Text style={commomStyles.errorInput}>
+                                Nome de usuário está vazio.
+                            </Text>
+                        }
 
                         <Text style={styles.formLabel}>Email</Text>
                         <TextInput style={styles.formInput} returnKeyType="next" 
@@ -98,6 +134,11 @@ export default function Registrar({navigation, context}) {
                             onSubmitEditing={() => { this.fourthTextInput.focus(); }} 
                             blurOnSubmit={false}
                             onChangeText={setEmail} />
+                        { emailEmptyError && 
+                            <Text style={commomStyles.errorInput}>
+                                Email está vazio.
+                            </Text>
+                        }
 
                         <Text style={styles.formLabel}>Senha</Text>
                         <TextInput style={styles.formInput}
@@ -105,9 +146,17 @@ export default function Registrar({navigation, context}) {
                             secureTextEntry={true}
                             onSubmitEditing={criarConta}
                             onChangeText={setPass} />
+                        { passEmptyError && 
+                            <Text style={commomStyles.errorInput}>
+                                Nome de usuário está vazio.
+                            </Text>
+                        }
 
                         <TouchableOpacity style={styles.formSubmitRegister} onPress={criarConta}>
-                            <Text style={styles.formTextSubmit}>Criar Conta</Text>
+                            { isSubmited
+                                ? <ActivityIndicator color={'white'}/>
+                                : <Text style={styles.formTextSubmit}>Criar Conta</Text>
+                            }
                         </TouchableOpacity>
                     </View>
                 </KeyboardAwareScrollView>
