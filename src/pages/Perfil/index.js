@@ -6,6 +6,8 @@ import { IMAGENAME } from '../../components/images';
 
 export default function Perfil({navigation, context}) {
 
+    const { signOut } = useContext(context);
+
     return (
         <Pressable onPress={Keyboard.dismiss} style={styles.containerPressable}>
 			<SafeAreaView style={styles.container}>

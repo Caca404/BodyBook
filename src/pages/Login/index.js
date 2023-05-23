@@ -1,9 +1,8 @@
 import { useState, useContext } from 'react';
 import { ActivityIndicator, SafeAreaView, Pressable, Keyboard, Text, View, TextInput, TouchableOpacity } from 'react-native';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faDumbbell } from '@fortawesome/free-solid-svg-icons/faDumbbell';
 import styles from './styles';
 import commomStyles from '../../../styles';
+import Logo from '../../components/Logo';
 
 export default function Login({navigation, context}) {
 
@@ -53,11 +52,7 @@ export default function Login({navigation, context}) {
     return (
         <Pressable onPress={Keyboard.dismiss} style={styles.containerPressable}>
 			<SafeAreaView style={styles.container}>
-                <View style={styles.header}>
-                    <FontAwesomeIcon icon={faDumbbell} color="yellow"  size={32}/>
-                    <Text style={styles.titleApp}> BodyBook </Text>
-                    <FontAwesomeIcon icon={faDumbbell} color="yellow" size={32}/>
-                </View>
+                <Logo />
                 <View style={styles.formLogin}>
                     <Text style={styles.formLabel}>Login</Text>
                     <TextInput style={styles.formInput} returnKeyType="next" 

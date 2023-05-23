@@ -21,6 +21,9 @@ const styles = StyleSheet.create({
       alignItems: "flex-start",
       marginLeft: 18
     },
+    body:{
+      marginTop: 10
+    },
     container: {
       flex: 1,
       backgroundColor: '#2b2b2b',
