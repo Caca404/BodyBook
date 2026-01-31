@@ -35,19 +35,29 @@ export default function App() {
 				case 'RESTORE_TOKEN':
 					return {
 						...prevState,
+						isNewUser: action.newUser,
 						userToken: action.token,
 						isLoading: false,
+					};
+				case 'SIGN_UP':
+					return {
+						...prevState,
+						isSignout: false,
+						isNewUser: true,
+						userToken: action.token,
 					};
 				case 'SIGN_IN':
 					return {
 						...prevState,
 						isSignout: false,
+						isNewUser: action.newUser,
 						userToken: action.token,
 					};
 				case 'SIGN_OUT':
 					return {
 						...prevState,
 						isSignout: true,
+						isNewUser: action.newUser,
 						userToken: null,
 					};
 			}
@@ -55,6 +65,7 @@ export default function App() {
 		{
 			isLoading: true,
 			isSignout: false,
+			isNewUser: false,
 			userToken: null,
 		}
 	);
@@ -123,7 +134,14 @@ export default function App() {
 
 					dispatch({ type: 'SIGN_OUT' });
 				})
-				.catch(error => console.log(error));
+				.catch(async error => {
+					if(error.response.status == 401){
+						await SecureStore.deleteItemAsync('userToken');
+
+						dispatch({ type: 'SIGN_OUT' });
+					}
+					else console.log(error.response.data);
+				});
 		},
 		signUp: async (data) => {
 			// In a production app, we need to send user data to server and get a token
